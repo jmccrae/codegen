@@ -7,8 +7,7 @@ import org.eclipse.jetty.server.Server;
 
 public class Main {
     public static void main(String[] _args) throws Exception {
-        final List<String> args = Arrays.asList("config.json");
-//        final List<String> args = Arrays.asList(_args);
+        final List<String> args = Arrays.asList(_args);
         int port = 8080;
         for(int i = 0; i < args.size() - 1; i++) {
             if(args.get(i).equals("-p")) {
