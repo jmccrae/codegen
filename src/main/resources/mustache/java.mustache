@@ -1,0 +1,204 @@
+package {{package}};
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import static java.util.Collections.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import javax.persistence.Id;
+
+/**
+ * Automatically generated POJOs for ontology at {{uri}}.
+ * DO NOT EDIT! 
+ */
+public class {{Type}} {
+    public final static String __uri__ = "{{uri}}";
+    private final String id;
+
+    public {{Type}}(String id) {
+        this.id = id;
+    }
+
+    {{#fields}}
+        {{#functional}}
+    private {{range}} {{name}};
+
+    public {{range}} get{{Name}}() {
+        return this.{{name}};
+    }
+
+    public void set{{Name}}({{range}} {{name}}) {
+        this.{{name}} = {{name}};
+    }
+
+        {{/functional}}
+        {{^functional}}
+    private final Set<{{range}}> {{name}} = new HashSet<{{range}}>();
+
+    public Set<{{range}}> get{{Name}}() {
+        return unmodifiableSet(this.{{name}});
+    }
+
+    public void set{{Name}}(Set<{{range}}> {{name}}) {
+        this.{{name}}.clear();
+        this.{{name}}.addAll({{name}});
+    }
+
+    public void add{{Name}}({{range}} {{name}}) {
+        this.{{name}}.add({{name}});
+    }
+
+    public boolean remove{{Name}}({{range}} {{name}}) {
+        return this.{{name}}.remove({{name}});
+    }
+
+        {{/functional}}
+    {{/fields}}
+
+    public static {{Type}} fromResource(Resource resource) {
+        final String id;
+        if(resource.isURIResource()) {
+            id = resource.getModel().shortForm(resource.getURI());
+        } else {
+            id = "_:" + resource.getId().getLabelString();
+        }
+        final {{Type}} thisObj = new {{Type}}(id);
+        {{#fields}}
+        {
+            {{#functional}}
+            final Statement statement = resource.getProperty(
+                resource.getModel().getProperty("{{uri}}"));
+            {{#object}}
+            if(statement.getObject().isResource()) {
+                thisObj.set{{Name}}({{range}}.fromResource(
+                    statement.getObject().asResource()));
+            } else {
+                throw new RuntimeException("Expected a resource for {{uri}}");
+            }
+            {{/object}}
+            {{#string}}
+            if(statement.getObject().isLiteral()) {
+                thisObj.set{{Name}}(statement.getObject().asLiteral().getString());
+            } else {
+                throw new RuntimeException("Expected a literal for {{uri}}");
+            }
+            {{/string}}
+            {{#int}}
+            if(statement.getObject().isLiteral()) {
+                thisObj.set{{Name}}(statement.getObject().asLiteral().getInt());
+            } else {
+                throw new RuntimeException("Expected a literal for {{uri}}");
+            }
+            {{/int}}
+            {{#number}}
+            if(statement.getObject().isLiteral()) {
+                thisObj.set{{Name}}(statement.getObject().asLiteral().getDouble());
+            } else {
+                throw new RuntimeException("Expected a literal for {{uri}}");
+            }
+            {{/number}}
+            {{#bool}}
+            if(statement.getObject().isLiteral()) {
+                thisObj.set{{Name}}(statement.getObject().asLiteral().getBoolean());
+            } else {
+                throw new RuntimeException("Expected a literal for {{uri}}");
+            }
+            {{/bool}}
+            {{/functional}}
+            {{^functional}}
+            final StmtIterator iterator = resource.listProperties(
+                resource.getModel().getProperty("{{uri}}"));
+
+            while(iterator.hasNext()) {
+                final Statement statement = iterator.next();
+                {{#object}}
+                if(statement.getObject().isResource()) {
+                    thisObj.add{{Name}}({{range}}.fromResource(
+                        statement.getObject().asResource()));
+                } else {
+                    throw new RuntimeException("Expected a resource for {{uri}}");
+                }
+                {{/object}}
+                {{#string}}
+                if(statement.getObject().isLiteral()) {
+                    thisObj.add{{Name}}(statement.getObject().asLiteral().getString());
+                } else {
+                    throw new RuntimeException("Expected a literal for {{uri}}");
+                }
+                {{/string}}
+                {{#int}}
+                if(statement.getObject().isLiteral()) {
+                    thisObj.add{{Name}}(statement.getObject().asLiteral().getInt());
+                } else {
+                    throw new RuntimeException("Expected a literal for {{uri}}");
+                }
+                {{/int}}
+                {{#number}}
+                if(statement.getObject().isLiteral()) {
+                    thisObj.add{{Name}}(statement.getObject().asLiteral().getDouble());
+                } else {
+                    throw new RuntimeException("Expected a literal for {{uri}}");
+                }
+                {{/number}}
+                {{#bool}}
+                if(statement.getObject().isLiteral()) {
+                    thisObj.add{{Name}}(statement.getObject().asLiteral().getBoolean());
+                } else {
+                    throw new RuntimeException("Expected a literal for {{uri}}");
+                }
+                {{/bool}}
+            }
+            {{/functional}}
+        }
+        {{/fields}}
+        return thisObj;
+    }
+
+    public Resource toResource(Model model) {
+        final Resource resource = model.createResource(model.expandPrefix(id)); 
+        resource.addProperty(com.hp.hpl.jena.vocabulary.RDF.type, 
+            model.createResource(__uri__));
+        {{#fields}}
+            {{#functional}}
+                {{#object}}
+        resource.addProperty(model.createProperty("{{uri}}"), {{name}}.toResource(model));
+                {{/object}}
+                {{#string}}
+        resource.addProperty(model.createProperty("{{uri}}"), {{name}});
+                {{/string}}
+                {{#int}}
+        resource.addLiteral(model.createProperty("{{uri}}"), {{name}});
+                {{/int}}
+                {{#number}}
+        resource.addLiteral(model.createProperty("{{uri}}"), {{name}});
+                {{/number}}
+                {{#bool}}
+        resource.addLiteral(model.createProperty("{{uri}}"), {{name}});
+                {{/bool}}
+            {{/functional}}
+            {{^functional}}
+        for({{range}} member : {{name}}) {
+                {{#object}}
+            resource.addProperty(model.createProperty("{{uri}}"), member.toResource(model));
+                {{/object}}
+                {{#string}}
+            resource.addProperty(model.createProperty("{{uri}}"), member);
+                {{/string}}
+                {{#int}}
+            resource.addLiteral(model.createProperty("{{uri}}"), member);
+                {{/int}}
+                {{#number}}
+            resource.addLiteral(model.createProperty("{{uri}}"), member);
+                {{/number}}
+                {{#bool}}
+            resource.addLiteral(model.createProperty("{{uri}}"), member);
+                {{/bool}}
+        }
+            {{/functional}}
+        {{/fields}}
+        return resource;
+    }
+}

@@ -1,0 +1,42 @@
+package {{package}}
+
+import bildaj.BeanLikeBuilder
+
+class {{Type}}({{#fields}}
+{{#functional}}  val {{name}} : {{range}}{{^last}},{{/last}}{{/functional}}
+{{^functional}}  val {{name}} : Set[{{range}}]{{^last}},{{/last}}{{/functional}}
+{{/fields}}) {
+  {{#fields}}
+    {{#functional}}
+  def get{{Name}}() = {{name}}
+    {{/functional}}
+    {{^functional}}
+  def get{{Name}}() = scala.collection.JavaConversions.setAsJavaSet({{name}})
+    {{/functional}}
+  {{/fields}}
+}
+
+class {{Type}}Builder extends BeanLikeBuilder[{{Type}}] {
+    {{#fields}}
+        {{#functional}}
+    def set{{Name}}({{name}} : {{range}}) = {{name}} match {
+        case _ : BeanLikeBuilder => set({{index}}, {{name}}.asInstanceOf[BeanLikeBuilder].construct)
+        case _ => set({{index}}, {{name}})
+    }
+        {{/functional}}
+        {{^functional}}
+    def set{{Name}}({{name}} : java.util.Set[{{range}}]) = if({{name}}.isEmpty()) {
+        set({{index}}, Set())
+    } else {
+        for(element <- scala.collection.JavaConversions.asScalaSet({{name}})) yield {
+            if(element.isInstanceOf[BeanLikeBuilder]) {
+                element.construct
+            } else {
+                element
+            }
+        }
+    }
+        {{/functional}}
+    {{/fields}}
+}
+        

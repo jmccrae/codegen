@@ -1,0 +1,8 @@
+{
+    "services": [{
+        "jar": "../example/target/codegen.example-1.0-SNAPSHOT.jar",
+        "className": "eu.liderproject.codegen.example.Tokenizer",
+        "methods": ["tokenize"],
+        "path": "/"
+    }]
+}

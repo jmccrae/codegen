@@ -1,0 +1,5 @@
+@prefix : <#> .
+@prefix nif: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
+
+:test a nif:String ;
+  nif:anchorOf "This is a test"@en .
