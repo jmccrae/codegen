@@ -261,16 +261,22 @@ object CodeGen {
     val template = new java.io.InputStreamReader(this.getClass().getResource("/mustache/%s.mustache" format args(0)).openStream())
 
     for(codeGen <- codeGens) {
-      // 5. Make directories 
-      val dir = new File((srcDir match {
-        case Some(s) => if(s.endsWith(System.getProperty("file.separator"))) {
-          s
-        } else {
-          s + System.getProperty("file.separator")
-        }
-        case None => ""
-      }) + codeGen.packageName.replaceAll("\\.",System.getProperty("file.separator")))
-      dir.mkdirs()
+      val dir = if(args(0) == "java") {
+        // 5. Make directories 
+        val dir2 = new File((srcDir match {
+          case Some(s) => if(s.endsWith(System.getProperty("file.separator"))) {
+            s
+          } else {
+            s + System.getProperty("file.separator")
+          }
+          case None => ""
+        }) + codeGen.packageName.replaceAll("\\.",System.getProperty("file.separator")))
+        dir2.mkdirs()
+        dir2
+      } else {
+        new File(srcDir.getOrElse("./"))
+      }
+
 
       // 6. Write template
       MustacheCodeGen.generate(template, args(0), codeGen, new File(dir, codeGen.name + "." + args(0)))

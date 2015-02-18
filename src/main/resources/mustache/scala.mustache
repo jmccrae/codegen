@@ -1,42 +1,191 @@
 package {{package}}
 
-import bildaj.BeanLikeBuilder
+import com.hp.hpl.jena.rdf.model.Resource
+import com.hp.hpl.jena.rdf.model.Statement
+import com.hp.hpl.jena.rdf.model.StmtIterator
 
-class {{Type}}({{#fields}}
-{{#functional}}  val {{name}} : {{range}}{{^last}},{{/last}}{{/functional}}
-{{^functional}}  val {{name}} : Set[{{range}}]{{^last}},{{/last}}{{/functional}}
-{{/fields}}) {
-  {{#fields}}
-    {{#functional}}
-  def get{{Name}}() = {{name}}
-    {{/functional}}
-    {{^functional}}
-  def get{{Name}}() = scala.collection.JavaConversions.setAsJavaSet({{name}})
-    {{/functional}}
-  {{/fields}}
-}
-
-class {{Type}}Builder extends BeanLikeBuilder[{{Type}}] {
+/**
+ * Automatically generated POSOs for ontology at {{uri}}.
+ * DO NOT EDIT! 
+ */
+class {{Type}}(id : String) {
     {{#fields}}
         {{#functional}}
-    def set{{Name}}({{name}} : {{range}}) = {{name}} match {
-        case _ : BeanLikeBuilder => set({{index}}, {{name}}.asInstanceOf[BeanLikeBuilder].construct)
-        case _ => set({{index}}, {{name}})
+    private {{name}} : {{range}}
+
+    def get{{Name}}() = {{name}}
+
+    def set{{Name}}({{name}} : {{range}}) {
+        this.{{name}} = {{name}}
     }
+
         {{/functional}}
         {{^functional}}
-    def set{{Name}}({{name}} : java.util.Set[{{range}}]) = if({{name}}.isEmpty()) {
-        set({{index}}, Set())
-    } else {
-        for(element <- scala.collection.JavaConversions.asScalaSet({{name}})) yield {
-            if(element.isInstanceOf[BeanLikeBuilder]) {
-                element.construct
-            } else {
-                element
-            }
-        }
+    private val {{name}} = collection.mutable.Set[{{range}}]()
+
+    def get{{Name}}() = this.{{name}}.toSet
+
+    def set{{Name}}({{name}} : Set[{{range}}]) {
+        this.{{name}}.clear()
+        this.{{name}} ++= {{name}}
     }
+
+    def add{{Name}}({{name}} : {{range}}) {
+        this.{{name}}.add({{name}})
+    }
+
+    def remove{{Name}}({{name}} : {{range}}) {
+        return this.{{name}}.remove({{name}});
+    }
+
         {{/functional}}
     {{/fields}}
+
+    def toResource(model : Model) : Resource = {
+        val resource = model.createResource(model.expandPrefix(id))
+        resource.addProperty(com.hp.hpl.jena.vocabulary.RDF.`type`, 
+            model.createResource({{Type}}.__uri__))
+        {{#fields}}
+            {{#functional}}
+                {{#object}}
+        resource.addProperty(model.createProperty("{{uri}}"), {{name}}.toResource(model))
+                {{/object}}
+                {{#string}}
+        resource.addProperty(model.createProperty("{{uri}}"), {{name}})
+                {{/string}}
+                {{#int}}
+        resource.addLiteral(model.createProperty("{{uri}}"), {{name}})
+                {{/int}}
+                {{#number}}
+        resource.addLiteral(model.createProperty("{{uri}}"), {{name}})
+                {{/number}}
+                {{#bool}}
+        resource.addLiteral(model.createProperty("{{uri}}"), {{name}})
+                {{/bool}}
+            {{/functional}}
+            {{^functional}}
+        for(member <- {{name}}) {
+                {{#object}}
+            resource.addProperty(model.createProperty("{{uri}}"), member.toResource(model))
+                {{/object}}
+                {{#string}}
+            resource.addProperty(model.createProperty("{{uri}}"), member)
+                {{/string}}
+                {{#int}}
+            resource.addLiteral(model.createProperty("{{uri}}"), member)
+                {{/int}}
+                {{#number}}
+            resource.addLiteral(model.createProperty("{{uri}}"), member)
+                {{/number}}
+                {{#bool}}
+            resource.addLiteral(model.createProperty("{{uri}}"), member)
+                {{/bool}}
+        }
+            {{/functional}}
+        {{/fields}}
+        return resource;
+    }
 }
-        
+
+object {{Type}} {
+    val __uri__ = "{{uri}}"
+
+    def fromResource(resource : Resource) : {{Type}} = {
+        val id = if(resource.isURIResource()) {
+            resource.getModel().shortForm(resource.getURI())
+        } else {
+            "_:" + resource.getId().getLabelString()
+        }
+        val thisObj = new {{Type}}(id)
+        {{#fields}}
+        {
+            {{#functional}}
+            val statement = resource.getProperty(
+                resource.getModel().getProperty("{{uri}}"))
+            {{#object}}
+            if(statement.getObject().isResource()) {
+                thisObj.set{{Name}}({{range}}.fromResource(
+                    statement.getObject().asResource()))
+            } else {
+                throw new RuntimeException("Expected a resource for {{uri}}")
+            }
+            {{/object}}
+            {{#string}}
+            if(statement.getObject().isLiteral()) {
+                thisObj.set{{Name}}(statement.getObject().asLiteral().getString())
+            } else {
+                throw new RuntimeException("Expected a literal for {{uri}}")
+            }
+            {{/string}}
+            {{#int}}
+            if(statement.getObject().isLiteral()) {
+                thisObj.set{{Name}}(statement.getObject().asLiteral().getInt())
+            } else {
+                throw new RuntimeException("Expected a literal for {{uri}}")
+            }
+            {{/int}}
+            {{#number}}
+            if(statement.getObject().isLiteral()) {
+                thisObj.set{{Name}}(statement.getObject().asLiteral().getDouble())
+            } else {
+                throw new RuntimeException("Expected a literal for {{uri}}")
+            }
+            {{/number}}
+            {{#bool}}
+            if(statement.getObject().isLiteral()) {
+                thisObj.set{{Name}}(statement.getObject().asLiteral().getBoolean())
+            } else {
+                throw new RuntimeException("Expected a literal for {{uri}}")
+            }
+            {{/bool}}
+            {{/functional}}
+            {{^functional}}
+            val iterator = resource.listProperties(
+                resource.getModel().getProperty("{{uri}}"))
+
+            while(iterator.hasNext()) {
+                val statement = iterator.next()
+                {{#object}}
+                if(statement.getObject().isResource()) {
+                    thisObj.add{{Name}}({{range}}.fromResource(
+                        statement.getObject().asResource()))
+                } else {
+                    throw new RuntimeException("Expected a resource for {{uri}}")
+                }
+                {{/object}}
+                {{#string}}
+                if(statement.getObject().isLiteral()) {
+                    thisObj.add{{Name}}(statement.getObject().asLiteral().getString())
+                } else {
+                    throw new RuntimeException("Expected a literal for {{uri}}")
+                }
+                {{/string}}
+                {{#int}}
+                if(statement.getObject().isLiteral()) {
+                    thisObj.add{{Name}}(statement.getObject().asLiteral().getInt())
+                } else {
+                    throw new RuntimeException("Expected a literal for {{uri}}")
+                }
+                {{/int}}
+                {{#number}}
+                if(statement.getObject().isLiteral()) {
+                    thisObj.add{{Name}}(statement.getObject().asLiteral().getDouble())
+                } else {
+                    throw new RuntimeException("Expected a literal for {{uri}}")
+                }
+                {{/number}}
+                {{#bool}}
+                if(statement.getObject().isLiteral()) {
+                    thisObj.add{{Name}}(statement.getObject().asLiteral().getBoolean())
+                } else {
+                    throw new RuntimeException("Expected a literal for {{uri}}")
+                }
+                {{/bool}}
+            }
+            {{/functional}}
+        }
+        {{/fields}}
+        thisObj
+    }
+}
+

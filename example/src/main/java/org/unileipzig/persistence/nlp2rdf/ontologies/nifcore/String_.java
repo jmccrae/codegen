@@ -8,7 +8,6 @@ import static java.util.Collections.*;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.persistence.Id;
 
 /**
  * Automatically generated POJOs for ontology at http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#String.
