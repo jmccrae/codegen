@@ -101,6 +101,8 @@ public class String_ {
 
     public Resource toResource(Model model) {
         final Resource resource = model.createResource(model.expandPrefix(id)); 
+        resource.addProperty(com.hp.hpl.jena.vocabulary.RDF.type, 
+            model.createResource(__uri__));
         for(String_ member : subString) {
             resource.addProperty(model.createProperty("http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#subString"), member.toResource(model));
         }

@@ -234,7 +234,7 @@ object CodeGen {
         i += 1
       }
     }
-    if(args.length != 3) {
+    if(args.length != 2) {
       System.err.println("Usage: codegen [-p srcDir] language context")
       System.err.println("    srcDir: The target directory to generate the class to")
       System.err.println("    language: The target language (e.g., java)")
