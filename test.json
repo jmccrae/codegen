@@ -1,4 +1,5 @@
 {
+    "String": "http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#String",
     "anchorOf": "http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#anchorOf",
     "subString": {
         "@id": "http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#subString",

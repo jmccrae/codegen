@@ -2,7 +2,8 @@ package eu.liderproject.codegen
 
 import eu.liderproject.jsonld._
 import java.io.File
-import com.hp.hpl.jena.rdf.model._
+import com.hp.hpl.jena.rdf.model.{Seq => _, _}
+import com.hp.hpl.jena.ontology.OntModelSpec
 import com.hp.hpl.jena.vocabulary.{RDF, RDFS, OWL, XSD}
 import java.net.URI
 import org.apache.jena.riot.RDFDataMgr
@@ -130,7 +131,7 @@ object CodeGen {
           inverseFunctional = true
         } else if(stat.getPredicate() == RDF.`type` && stat.getObject() == OWL.ObjectProperty) {
           objectProperty = true
-        } else if(stat.getPredicate() == RDFS.subClassOf) {
+        } else if(stat.getPredicate() == RDFS.subClassOf && stat.getObject().isURIResource()) {
           superclasses ::= new URI(stat.getObject().toString())
         }
       }
@@ -200,14 +201,25 @@ object CodeGen {
       }
     }
   
-  def buildCodeGenModel(schema : JsonLDSchema, rootClass : URI) : CodeGenClass = {
+  def buildCodeGenModel(schema : JsonLDSchema) : Seq[CodeGenClass] = {
     val clazzes = collection.mutable.Map[URI, CodeGenClass]()
-
+    
     val rdfModel = buildModelForSchema(schema)
 
     val processedModel = processModel(schema, rdfModel)
 
-    return buildClass(schema, processedModel, rootClass, clazzes)
+    val ontology = ModelFactory.createOntologyModel(
+        OntModelSpec.OWL_MEM, rdfModel)
+
+    val ontologyClazzes = ontology.listNamedClasses().toSet.filter(_.isURIResource()).map(
+      oc => URI.create(oc.getURI()))
+
+    schema.mappings.values.toSeq.flatMap { 
+      case TypedMapping(uri, _, _) if ontologyClazzes.contains(uri) =>
+        Some(buildClass(schema, processedModel, uri, clazzes))
+      case _ => 
+        None
+    }
   }
 
   def main(_args : Array[String]) {
@@ -223,11 +235,10 @@ object CodeGen {
       }
     }
     if(args.length != 3) {
-      System.err.println("Usage: codegen [-p srcDir] language context classURI")
+      System.err.println("Usage: codegen [-p srcDir] language context")
       System.err.println("    srcDir: The target directory to generate the class to")
       System.err.println("    language: The target language (e.g., java)")
       System.err.println("    context: The URL of the JSON-LD context document")
-      System.err.println("    classURI: The URI of the main class")
       System.exit(-1)
     }
     // 1. Load Json
@@ -244,24 +255,26 @@ object CodeGen {
     val context = JsonLDSchema.fromJson(json)
 
     // 3. Build Code Gen Classes
-    val codeGen = buildCodeGenModel(context, new URI(args(2)))
+    val codeGens = buildCodeGenModel(context)
 
     // 4. Find template
     val template = new java.io.InputStreamReader(this.getClass().getResource("/mustache/%s.mustache" format args(0)).openStream())
 
-    // 5. Make directories 
-    val dir = new File((srcDir match {
-      case Some(s) => if(s.endsWith(System.getProperty("file.separator"))) {
-        s
-      } else {
-        s + System.getProperty("file.separator")
-      }
-      case None => ""
-    }) + codeGen.packageName.replaceAll("\\.",System.getProperty("file.separator")))
-    dir.mkdirs()
+    for(codeGen <- codeGens) {
+      // 5. Make directories 
+      val dir = new File((srcDir match {
+        case Some(s) => if(s.endsWith(System.getProperty("file.separator"))) {
+          s
+        } else {
+          s + System.getProperty("file.separator")
+        }
+        case None => ""
+      }) + codeGen.packageName.replaceAll("\\.",System.getProperty("file.separator")))
+      dir.mkdirs()
 
-    // 6. Write template
-    MustacheCodeGen.generate(template, args(0), codeGen, new File(dir, codeGen.name + "." + args(0)))
+      // 6. Write template
+      MustacheCodeGen.generate(template, args(0), codeGen, new File(dir, codeGen.name + "." + args(0)))
+    }
   }
 
 }

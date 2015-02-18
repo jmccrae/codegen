@@ -19,7 +19,7 @@ class CodeGenTest extends FlatSpec with Matchers {
       codeGenClass,
       outFile)
     val content = scala.io.Source.fromFile(outFile).getLines().mkString("\n")
-    println(content)
+   // println(content)
     content.contains("final Set<String> field2") should be (true)
   }
 
@@ -45,10 +45,11 @@ class CodeGenTest extends FlatSpec with Matchers {
       "subString" -> Json(
         "@id" -> JsonString("http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#subString"),
         "@type" -> JsonString("@id")
-      )
+      ),
+      "String" -> JsonString("http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#String")
     )
     val context = JsonLDSchema.fromJson(contextJson)
-    val codeGen = buildCodeGenModel(context, new URI("http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#String"))
+    val codeGen = buildCodeGenModel(context).head
     codeGen.fields.size should be (2)
     for(field <- codeGen.fields) {
       val CodeGenField(name, uri, range, functional) = field
